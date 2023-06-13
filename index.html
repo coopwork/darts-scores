@@ -257,8 +257,8 @@
   <!-- <script src="/app.js"></script> -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
-  <script>
-    const
+ <script>
+  const
 gameRounds = document.querySelector('.game_rounds'),
 scoresTable = document.querySelector('.scores_table'),
 addPlayersInputsBlock = document.querySelector('.add_players_inputs'),
@@ -574,7 +574,7 @@ function saveStatistic() {
 
 function getStatistic() {
   const leaderboard = document.querySelector('.globalLeaderboard');
-  let localStorageStatistic = localStorage.getItem('statistic').split('___') || [];
+  let localStorageStatistic = localStorage.getItem('statistic')?.split('___') || [];
   let globalStatistic = []
 
   localStorageStatistic.forEach((element, index) => {
@@ -642,6 +642,6 @@ addPlayersButton.addEventListener('click', addPlayer);
 startGameButton.addEventListener('click', startGame);
 
 
-  </script>
+ </script>
 </body>
 </html>

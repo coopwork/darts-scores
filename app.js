@@ -314,7 +314,7 @@ function saveStatistic() {
 
 function getStatistic() {
   const leaderboard = document.querySelector('.globalLeaderboard');
-  let localStorageStatistic = localStorage.getItem('statistic').split('___') || [];
+  let localStorageStatistic = localStorage.getItem('statistic')?.split('___') || [];
   let globalStatistic = []
 
   localStorageStatistic.forEach((element, index) => {
