@@ -5,6 +5,110 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
   <link rel="shortcut icon" href="https://image.spreadshirtmedia.net/image-server/v1/products/T1459A839PA4459PT28D178063897W10000H10000/views/1,width=550,height=550,appearanceId=839,backgroundColor=F2F2F2/darts-player-darts-darts-emblem-logo-bullseye-sticker.jpg" type="image/x-icon">
+  <script defer>
+    let toaster = null;
+    function removeToast(e) {
+        e.srcElement.parentElement.remove();
+    }
+    function addToast(options = {}) {
+        let baseOptions = {
+            message: options.message || 'An unknown error has occurred',
+            type: options.type || null,
+            timeout: options.timeout || 0
+        }
+
+        if (!toaster) {
+            toaster = document.createElement('div');
+            toaster.id = 'toasterAlert';
+            document.body.append(toaster);
+        }
+
+        let 
+        toast = document.createElement('div'),
+        toastRemove = document.createElement('i');
+
+        toast.classList.add('toastAlert');
+        if (baseOptions.type) {toast.classList.add(baseOptions.type)}
+        toastRemove.classList.add('bi', 'bi-plus-circle-fill');
+
+        toast.textContent = baseOptions.message;
+
+        toaster.append(toast);
+        toast.append(toastRemove);
+
+        toastRemove.addEventListener('click', removeToast);
+
+        if (baseOptions.timeout && baseOptions.timeout >= 3000) {
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+            }, +baseOptions.timeout - 1000);
+            setTimeout(() => {
+                toastRemove.removeEventListener('click', removeToast);
+                toast.remove();
+            }, baseOptions.timeout);
+        }
+    }
+  </script>
+  <style>
+    #toasterAlert{
+      position: fixed;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      bottom: 10px;
+      right: 10px;
+      z-index: 10000;
+      max-width: 450px;
+      width: 100%;
+    }
+    .toastAlert i.bi.bi-plus-circle-fill{
+      transform: rotate(45deg);
+      font-size: 30px;
+      text-shadow: 1px 2px 10px rgba(0, 0, 0, 0.200);
+      color: red;
+      border-radius: 50%;
+      position: absolute;
+      z-index: 1;
+      top: -10px; right: -5px;
+      cursor: pointer;
+      opacity: .85;
+    }
+    .toastAlert i.bi.bi-plus-circle-fill:hover{
+      scale: 1.1;
+      opacity: 1;
+    }
+    .toastAlert{
+      position: relative;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: wheat;
+      animation: toastStart .5s ease-in-out;
+      width: 100%;
+      opacity: .9;
+      box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.200);
+      backdrop-filter: blur(10px);
+    }
+    @keyframes toastStart {
+      from{
+        height: 1px;
+        transform: translateX(800px);
+      }
+    }
+    .toastAlert.fade-out{
+      opacity: 0 !important;
+      transition: 1s ease-in-out all;
+    }
+
+    .toastAlert.danger{background-color: red; color: white;}
+    .toastAlert.danger i.bi.bi-plus-circle-fill{color: yellow}
+    .toastAlert.warning{background-color: yellow;}
+    .toastAlert.succes{background-color: #8fd879;}
+    .toastAlert.succes i.bi.bi-plus-circle-fill{color: white;}
+    .toastAlert.main{background-color: blue; color: white;}
+    .toastAlert.light{background-color: gainsboro;}
+    .toastAlert.gray{background-color: gray;}
+    .toastAlert.black{background-color: black; color: white;}
+  </style>
   <title>Darts</title>
 </head>
 <body>
@@ -27,7 +131,7 @@
           <div class="modal-body">
 
             <div class="form-floating mb-3">
-              <input type="number" class="form-control game_rounds" id="rounds" min="1" max="150" placeholder="0">
+              <input type="number" class="form-control game_rounds" id="rounds" min="1" max="150" placeholder="0" autofocus>
               <label for="rounds">Количество раундов</label>
             </div>
   
@@ -51,7 +155,7 @@
       </div>
     </div>
 
-    <div class="leaderboard">
+    <div class="leaderboard row">
 
     </div>
 
@@ -65,165 +169,218 @@
 
   <script>
     const
-    gameRounds = document.querySelector('.game_rounds'),
-    scoresTable = document.querySelector('.scores_table'),
-    addPlayersInputsBlock = document.querySelector('.add_players_inputs'),
-    addPlayersButton = document.querySelector('.add_player_button'),
-    startGameButton = document.querySelector('.start_game');
+gameRounds = document.querySelector('.game_rounds'),
+scoresTable = document.querySelector('.scores_table'),
+addPlayersInputsBlock = document.querySelector('.add_players_inputs'),
+addPlayersButton = document.querySelector('.add_player_button'),
+startGameButton = document.querySelector('.start_game');
 
-    function addPlayer(e) {
-      const 
-      div = document.createElement('div'),
-      label = document.createElement('label'),
-      input = document.createElement('input');
+let tutorial = JSON.parse(localStorage.getItem('tutorial'));
 
-      div.className = 'form-floating mb-3'
-      label.textContent = 'Имя'
-      label.setAttribute('for', 'firstname')
-      input.className = 'form-control'
-      input.id = 'firstname'
+let showBeginToast = JSON.parse(localStorage.getItem('tutorial'));
+if (!showBeginToast?.begin) {
+  localStorage.setItem('tutorial', JSON.stringify({...tutorial, 'begin': true}))
+  addToast({message: 'Начните игру нажав на кнопку "Новая игра"', timeout: 6000})
+}
 
-      div.appendChild(input);
-      div.appendChild(label);
-      addPlayersInputsBlock.appendChild(div);
-      input.focus()
+function addPlayer(e) {
+  const 
+  div = document.createElement('div'),
+  label = document.createElement('label'),
+  input = document.createElement('input');
+
+  div.className = 'form-floating mb-3'
+  label.textContent = 'Имя'
+  label.setAttribute('for', 'firstname')
+  input.className = 'form-control'
+  input.id = 'firstname'
+  input.title = 'Нажмите дважды что бы удалить'
+  input.addEventListener('dblclick', e => e.target.closest('.form-floating').remove())
+
+  div.appendChild(input);
+  div.appendChild(label);
+  addPlayersInputsBlock.appendChild(div);
+  input.focus()
+
+  let showRemovePlayerToast = JSON.parse(localStorage.getItem('tutorial'));
+  if (!showRemovePlayerToast?.removePlayer) {
+    localStorage.setItem('tutorial', JSON.stringify({...tutorial, 'removePlayer': true}))
+    addToast({message: 'Вы можете удалять игроков дважды нажав на поле ввода, кроме первого игрока!', timeout: 6000})
+  }
+}
+
+function createColumns(columnWidth, firstname) {
+  const 
+  div = document.createElement('div'),
+  ul = document.createElement('ul');
+
+  div.className = `col-${columnWidth}`;
+  ul.className = `list-group player-scores-column ${firstname}-player`;
+  
+  scoresTable.appendChild(div)
+  div.appendChild(ul)
+
+  return ul
+}
+
+function createRows(parrent, placeHolder, val, state) {
+  const input = document.createElement('input');
+
+  input.className = 'list-group-item';
+  input.setAttribute('type', 'text');
+  input.setAttribute('max', '1000');
+  input.setAttribute('placeholder', placeHolder);
+  input.setAttribute('value', val || '');
+  input.setAttribute('data-name', 'score-player');
+  input.value = val || '';
+
+  if (state) {
+    input.className = 'list-group-item active';
+    input.setAttribute('readonly', 'true');
+    input.setAttribute('data-name', val);
+  }
+
+  parrent.appendChild(input);
+}
+
+function setFinalScores(element, parrent) {
+  const finalScoreElement = document.querySelector(element),
+  inputs = parrent.document.querySelectorAll('input[type="number"]');
+
+  let scores = 0;
+
+  finalScoreElement.value = `Итог: ${scores}`;
+  finalScoreElement.setAttribute('value', `Итог: ${scores}`);
+}
+
+function checkNames() {
+  const inputNames = addPlayersInputsBlock.querySelectorAll('input');
+  let names = [];
+  inputNames.forEach(inputName => {
+    names.push(inputName.value);
+  });
+  const duplicates = names.filter((name, index, names) => {
+    return names.indexOf(name) !== index;
+    });
+  return duplicates
+}
+
+function checkNamesLength() {
+  const inputNames = addPlayersInputsBlock.querySelectorAll('input');
+  let res = false;
+
+  inputNames.forEach(inputName => {
+    if (inputName.value.length < 2) {
+      res = `${inputName.value} слишком короткое имя`
     }
+  });
 
-    function createColumns(columnWidth, firstname) {
-      const 
-      div = document.createElement('div'),
-      ul = document.createElement('ul');
+  return res;
+}
 
-      div.className = `col-${columnWidth}`;
-      ul.className = `list-group player-scores-column ${firstname}-player`;
-      
-      scoresTable.appendChild(div)
-      div.appendChild(ul)
+function startGame(e) {
+  const 
+  rounds = +gameRounds.value,
+  players = addPlayersInputsBlock.querySelectorAll('input'),
+  columnWidth = Math.trunc(12 / players.length);
 
-      return ul
+  if (rounds < 1) {
+    return alert('Невозможно начать игру с малым количеством раундов');
+  }
+
+  if (checkNames().length > 0) {
+    return alert('Имена игроков не должны быть одинаковыми');
+  }
+
+  if (checkNamesLength()) {
+    return alert(checkNamesLength());
+  }
+
+  
+
+  scoresTable.innerHTML='';
+
+  players.forEach(player => {
+    createColumns(columnWidth, player.value)
+    const playerColumn = document.querySelector(`.${player.value}-player`)
+    createRows(playerColumn, player.value, player.value, 'active');
+    for (let i = 0; i < rounds; i++) {
+      createRows(playerColumn, (i+1));
     }
+    createRows(playerColumn, 'Итог', 'Итог', 'active');
+  });
 
-    function createRows(parrent, placeHolder, val, state) {
-      const input = document.createElement('input');
+  document.querySelectorAll('.player-scores-column').forEach(column => {
+    let scoresInputs = column.querySelectorAll('input[data-name="score-player"]');
+    let finalScores = column.querySelector('input[data-name="Итог"]');
 
-      input.className = 'list-group-item';
-      input.setAttribute('type', 'text');
-      input.setAttribute('max', '1000');
-      input.setAttribute('placeholder', placeHolder);
-      input.setAttribute('value', val || '');
-      input.setAttribute('data-name', 'score-player');
-      input.value = val || '';
-
-      if (state) {
-        input.className = 'list-group-item active';
-        input.setAttribute('readonly', 'true');
-        input.setAttribute('data-name', val);
-      }
-
-      parrent.appendChild(input);
-    }
-
-    function setFinalScores(element, parrent) {
-      const finalScoreElement = document.querySelector(element),
-      inputs = parrent.document.querySelectorAll('input[type="number"]');
-
-      let scores = 0;
-
-      finalScoreElement.value = `Итог: ${scores}`;
-      finalScoreElement.setAttribute('value', `Итог: ${scores}`);
-    }
-
-    function checkNames() {
-      const inputNames = addPlayersInputsBlock.querySelectorAll('input');
-
-      for (let i = 0; i < inputNames.length; i++) {
-        return inputNames[i].value == inputNames[inputNames.length -1]
-      }
-    }
-
-    function startGame(e) {
-      const 
-      rounds = +gameRounds.value,
-      players = addPlayersInputsBlock.querySelectorAll('input'),
-      columnWidth = Math.trunc(12 / players.length);
-
-      if (rounds < 1) {
-        return alert('Невозможно начать игру с малым количеством раундов');
-      }
-      checkNames()
-
-      scoresTable.innerHTML='';
-
-      players.forEach(player => {
-        createColumns(columnWidth, player.value)
-        const playerColumn = document.querySelector(`.${player.value}-player`)
-        createRows(playerColumn, player.value, player.value, 'active');
-        for (let i = 0; i < rounds; i++) {
-          createRows(playerColumn, (i+1));
+    scoresInputs.forEach(input => {
+      input.addEventListener('keyup', (e)=>{
+        if (e.key == 'Enter') {
+          let scoresSum = 0;
+          e.target.value = +eval(e.target.value);
+          scoresInputs.forEach(score => {
+            scoresSum = +scoresSum + +score.value
+          });
+          finalScores.value = scoresSum;
+          finalScores.setAttribute('value', scoresSum);
+          getPositions(e)
         }
-        createRows(playerColumn, 'Итог', 'Итог', 'active');
       });
-
-      document.querySelectorAll('.player-scores-column').forEach(column => {
-        let scoresInputs = column.querySelectorAll('input[data-name="score-player"]');
-        let finalScores = column.querySelector('input[data-name="Итог"]');
-
-        scoresInputs.forEach(input => {
-          input.addEventListener('keyup', (e)=>{
-            if (e.key == 'Enter') {
-              let scoresSum = 0;
-              e.target.value = +eval(e.target.value);
-              scoresInputs.forEach(score => {
-                scoresSum = +scoresSum + +score.value
-              });
-              finalScores.value = scoresSum;
-              finalScores.setAttribute('value', scoresSum);
-              // getPositions(e)
-            }
-          });
-          input.addEventListener('input', (e)=> {
-            let scoresSum = 0;
-            scoresInputs.forEach(score => {
-              scoresSum = +scoresSum + +score.value
-            });
-
-            finalScores.value = scoresSum;
-            finalScores.setAttribute('value', scoresSum);
-            // getPositions(e)
-          });
+      input.addEventListener('input', (e)=> {
+        let scoresSum = 0;
+        scoresInputs.forEach(score => {
+          scoresSum = +scoresSum + +score.value
         });
+
+        finalScores.value = scoresSum;
+        finalScores.setAttribute('value', scoresSum);
+        getPositions(e)
+
+        let showCalculateInputToast = JSON.parse(localStorage.getItem('tutorial'));
+        if (!showCalculateInputToast?.calculateInput) {
+          localStorage.setItem('tutorial', JSON.stringify({...tutorial, 'calculateInput': true}))
+          addToast({message: 'Вы можете ввести в поле баллов математическую функцию и получить результат по нажатию на клавишу "ENTER" например: 20+15+10, ENTER = 45', timeout: 10000})
+        }
       });
+    });
+  });
 
-    }
+}
 
-    function getPositions(e) {
-      const players = document.querySelectorAll('.player-scores-column');
+function getPositions(e) {
+  const 
+  players = document.querySelectorAll('.player-scores-column'),
+  leaderboard = document.querySelector('.leaderboard');
 
-      players.forEach(scoreBoard => {
-        const 
-        inputs = scoreBoard.querySelectorAll('input.list-group-item.active'),
-        leaderboard = document.querySelector('.leaderboard');
+  leaderboard.innerHTML = '';
 
-        leaderboard.innerHTML = '';
+  players.forEach(scoreBoard => {
+    const 
+    inputs = scoreBoard.querySelectorAll('input.list-group-item.active');
 
-        inputs.forEach(player => {
-          renderPositions(player.value)
-        });
-      });
+    inputs.forEach(player => {
+      renderPositions(player.value)
+      console.log(player, player.value);
+    });
+  });
 
-      // console.log(leaders);
-    }
+  // console.log(leaders);
+}
 
-    function renderPositions(val) {
-      const     leaderboard = document.querySelector('.leaderboard'),
-      p = document.createElement('p');
+function renderPositions(val) {
+  const leaderboard = document.querySelector('.leaderboard'),
+  span = document.createElement('span');
 
-      p.textContent = val
-      leaderboard.appendChild(p);
-    }
+  span.textContent = val
+  span.className = 'col-6'
+  leaderboard.appendChild(span);
+}
 
-    addPlayersButton.addEventListener('click', addPlayer);
-    startGameButton.addEventListener('click', startGame);
+addPlayersButton.addEventListener('click', addPlayer);
+startGameButton.addEventListener('click', startGame);
+
+console.log(JSON.parse(localStorage.getItem('tutorial')));
   </script>
 </body>
 </html>

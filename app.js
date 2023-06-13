@@ -5,6 +5,14 @@ addPlayersInputsBlock = document.querySelector('.add_players_inputs'),
 addPlayersButton = document.querySelector('.add_player_button'),
 startGameButton = document.querySelector('.start_game');
 
+let tutorial = JSON.parse(localStorage.getItem('tutorial'));
+
+let showBeginToast = JSON.parse(localStorage.getItem('tutorial'));
+if (!showBeginToast?.begin) {
+  localStorage.setItem('tutorial', JSON.stringify({...tutorial, 'begin': true}))
+  addToast({message: 'Начните игру нажав на кнопку "Новая игра"', timeout: 6000})
+}
+
 function addPlayer(e) {
   const 
   div = document.createElement('div'),
@@ -16,11 +24,19 @@ function addPlayer(e) {
   label.setAttribute('for', 'firstname')
   input.className = 'form-control'
   input.id = 'firstname'
+  input.title = 'Нажмите дважды что бы удалить'
+  input.addEventListener('dblclick', e => e.target.closest('.form-floating').remove())
 
   div.appendChild(input);
   div.appendChild(label);
   addPlayersInputsBlock.appendChild(div);
   input.focus()
+
+  let showRemovePlayerToast = JSON.parse(localStorage.getItem('tutorial'));
+  if (!showRemovePlayerToast?.removePlayer) {
+    localStorage.setItem('tutorial', JSON.stringify({...tutorial, 'removePlayer': true}))
+    addToast({message: 'Вы можете удалять игроков дважды нажав на поле ввода, кроме первого игрока!', timeout: 6000})
+  }
 }
 
 function createColumns(columnWidth, firstname) {
@@ -69,10 +85,27 @@ function setFinalScores(element, parrent) {
 
 function checkNames() {
   const inputNames = addPlayersInputsBlock.querySelectorAll('input');
+  let names = [];
+  inputNames.forEach(inputName => {
+    names.push(inputName.value);
+  });
+  const duplicates = names.filter((name, index, names) => {
+    return names.indexOf(name) !== index;
+    });
+  return duplicates
+}
 
-  for (let i = 0; i < inputNames.length; i++) {
-    return inputNames[i].value == inputNames[inputNames.length -1]
-  }
+function checkNamesLength() {
+  const inputNames = addPlayersInputsBlock.querySelectorAll('input');
+  let res = false;
+
+  inputNames.forEach(inputName => {
+    if (inputName.value.length < 2) {
+      res = `${inputName.value} слишком короткое имя`
+    }
+  });
+
+  return res;
 }
 
 function startGame(e) {
@@ -84,7 +117,16 @@ function startGame(e) {
   if (rounds < 1) {
     return alert('Невозможно начать игру с малым количеством раундов');
   }
-  checkNames()
+
+  if (checkNames().length > 0) {
+    return alert('Имена игроков не должны быть одинаковыми');
+  }
+
+  if (checkNamesLength()) {
+    return alert(checkNamesLength());
+  }
+
+  
 
   scoresTable.innerHTML='';
 
@@ -112,7 +154,7 @@ function startGame(e) {
           });
           finalScores.value = scoresSum;
           finalScores.setAttribute('value', scoresSum);
-          // getPositions(e)
+          getPositions(e)
         }
       });
       input.addEventListener('input', (e)=> {
@@ -123,7 +165,13 @@ function startGame(e) {
 
         finalScores.value = scoresSum;
         finalScores.setAttribute('value', scoresSum);
-        // getPositions(e)
+        getPositions(e)
+
+        let showCalculateInputToast = JSON.parse(localStorage.getItem('tutorial'));
+        if (!showCalculateInputToast?.calculateInput) {
+          localStorage.setItem('tutorial', JSON.stringify({...tutorial, 'calculateInput': true}))
+          addToast({message: 'Вы можете ввести в поле баллов математическую функцию и получить результат по нажатию на клавишу "ENTER" например: 20+15+10, ENTER = 45', timeout: 10000})
+        }
       });
     });
   });
@@ -131,17 +179,19 @@ function startGame(e) {
 }
 
 function getPositions(e) {
-  const players = document.querySelectorAll('.player-scores-column');
+  const 
+  players = document.querySelectorAll('.player-scores-column'),
+  leaderboard = document.querySelector('.leaderboard');
+
+  leaderboard.innerHTML = '';
 
   players.forEach(scoreBoard => {
     const 
-    inputs = scoreBoard.querySelectorAll('input.list-group-item.active'),
-    leaderboard = document.querySelector('.leaderboard');
-
-    leaderboard.innerHTML = '';
+    inputs = scoreBoard.querySelectorAll('input.list-group-item.active');
 
     inputs.forEach(player => {
       renderPositions(player.value)
+      console.log(player, player.value);
     });
   });
 
@@ -149,12 +199,15 @@ function getPositions(e) {
 }
 
 function renderPositions(val) {
-  const     leaderboard = document.querySelector('.leaderboard'),
-  p = document.createElement('p');
+  const leaderboard = document.querySelector('.leaderboard'),
+  span = document.createElement('span');
 
-  p.textContent = val
-  leaderboard.appendChild(p);
+  span.textContent = val
+  span.className = 'col-6'
+  leaderboard.appendChild(span);
 }
 
 addPlayersButton.addEventListener('click', addPlayer);
 startGameButton.addEventListener('click', startGame);
+
+console.log(JSON.parse(localStorage.getItem('tutorial')));
