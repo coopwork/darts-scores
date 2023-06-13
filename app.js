@@ -7,6 +7,8 @@ startGameButton = document.querySelector('.start_game');
 
 let tutorial = JSON.parse(localStorage.getItem('tutorial'));
 
+let statistic = [];
+
 let showBeginToast = JSON.parse(localStorage.getItem('tutorial'));
 if (!showBeginToast?.begin) {
   localStorage.setItem('tutorial', JSON.stringify({...tutorial, 'begin': true}))
@@ -126,7 +128,16 @@ function startGame(e) {
     return alert(checkNamesLength());
   }
 
-  
+  statistic = [];
+  players.forEach(player => {
+    statistic.push(
+      {
+        name: player.value,
+        totalScore: 0,
+        bestRound: 0,
+      }
+    )
+  });
 
   scoresTable.innerHTML='';
 
@@ -154,10 +165,13 @@ function startGame(e) {
           });
           finalScores.value = scoresSum;
           finalScores.setAttribute('value', scoresSum);
+
+          setTotalScore()
           getPositions(e)
         }
       });
       input.addEventListener('input', (e)=> {
+        
         let scoresSum = 0;
         scoresInputs.forEach(score => {
           scoresSum = +scoresSum + +score.value
@@ -165,6 +179,8 @@ function startGame(e) {
 
         finalScores.value = scoresSum;
         finalScores.setAttribute('value', scoresSum);
+        
+        setTotalScore()
         getPositions(e)
 
         let showCalculateInputToast = JSON.parse(localStorage.getItem('tutorial'));
@@ -178,6 +194,27 @@ function startGame(e) {
 
 }
 
+function setTotalScore() {
+  statistic.forEach(player => {
+    let playerTotalScore = document.querySelector(`.${player.name}-player input[data-name="Итог"]`).value;
+    player.totalScore = +playerTotalScore;
+  });
+}
+
+function setBestScore() {
+  statistic.forEach(player => {
+    let playerScores = document.querySelectorAll(`.${player.name}-player input[data-name="score-player"]`);
+
+    let scoresList = [];
+    playerScores.forEach(score => {
+      scoresList.push(+score.value)
+    });
+    const bestRes = scoresList.sort((a, b) => b - a)[0];
+
+    player.bestRound = +bestRes;
+  });
+}
+
 function getPositions(e) {
   const 
   players = document.querySelectorAll('.player-scores-column'),
@@ -185,29 +222,23 @@ function getPositions(e) {
 
   leaderboard.innerHTML = '';
 
-  players.forEach(scoreBoard => {
-    const 
-    inputs = scoreBoard.querySelectorAll('input.list-group-item.active');
+  let sortedStatistic = [...statistic].sort((a,b) => a.totalScore - b.totalScore).reverse();
 
-    inputs.forEach(player => {
-      renderPositions(player.value)
-      console.log(player, player.value);
-    });
+  sortedStatistic.forEach(player => {
+    setBestScore()
+    setTotalScore()
+    renderPositions(player)
   });
-
-  // console.log(leaders);
 }
 
-function renderPositions(val) {
+function renderPositions(player) {
   const leaderboard = document.querySelector('.leaderboard'),
-  span = document.createElement('span');
+  li = document.createElement('li');
 
-  span.textContent = val
-  span.className = 'col-6'
-  leaderboard.appendChild(span);
+  li.textContent = `${player.name}: Баллы:${player.totalScore} Лучший бросок:${player.bestRound}`
+  li.className = 'col-12'
+  leaderboard.appendChild(li);
 }
 
 addPlayersButton.addEventListener('click', addPlayer);
 startGameButton.addEventListener('click', startGame);
-
-console.log(JSON.parse(localStorage.getItem('tutorial')));
