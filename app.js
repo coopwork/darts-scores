@@ -129,6 +129,7 @@ function startGame(e) {
     return alert(checkNamesLength());
   }
 
+  document.querySelector('#currentGameStatistic').classList.remove('d-none');
   saveStatisticButton.removeAttribute('disabled');
 
   statistic = [];
@@ -312,15 +313,70 @@ function saveStatistic() {
 }
 
 function getStatistic() {
-  let arr = localStorage.getItem('statistic').split('___') || [];
+  const leaderboard = document.querySelector('.globalLeaderboard');
+  let localStorageStatistic = localStorage.getItem('statistic').split('___') || [];
+  let globalStatistic = []
 
-  arr.forEach(element => {
-    console.log(JSON.parse(element));
+  localStorageStatistic.forEach((element, index) => {
+    globalStatistic = [...globalStatistic, ...JSON.parse(element).statistic || '']
   });
+  console.log(globalStatistic);
 
-  console.log(arr);
+  leaderboard.innerHTML = '';
+
+  let 
+  sortedStatisticTotal = [...globalStatistic].sort((a,b) => a.totalScore - b.totalScore).reverse(),
+  sortedStatisticBestRound = [...globalStatistic].sort((a,b) => a.bestRound - b.bestRound).reverse(),
+  sortedStatisticAverageRound = [...globalStatistic].sort((a,b) => a.averageRound - b.averageRound).reverse();
+
+  if (document.querySelector('#totalBestTotalResult').checked) {
+    sortedStatisticTotal.forEach(player => {
+      showStatistic(player)
+    });
+  }
+  if (document.querySelector('#totalBestAverageResult').checked) {
+    sortedStatisticAverageRound.forEach(player => {
+      showStatistic(player)
+    });
+  }
+  if (document.querySelector('#totalBestRoundResult').checked) {
+    sortedStatisticBestRound.forEach(player => {
+      showStatistic(player)
+    });
+  }
 }
-// getStatistic()
+
+function showStatistic(player) {
+  const leaderboard = document.querySelector('.globalLeaderboard'),
+  playerStatisticArr = [
+    `Баллы: ${player.totalScore}`,
+    `Лучший бросок: ${player.bestRound}`, 
+    `Средний бросок: ${player.averageRound}`,
+    `Худший бросок: ${player.worstRound}`
+  ],
+  li = document.createElement('li'),
+  div = document.createElement('div'),
+  h5 = document.createElement('h5');
+
+  li.className = 'col'
+  div.className = 'card p-2'
+  h5.textContent = `${player.name}`
+
+  leaderboard.appendChild(li);
+  li.appendChild(div);
+  div.appendChild(h5);
+
+  function renderStatistic(childText) {
+    const small = document.createElement('small');
+    small.textContent = childText;
+    div.appendChild(small);
+  }
+
+  playerStatisticArr.forEach(data => {
+    renderStatistic(data);
+  });
+}
+getStatistic()
 saveStatisticButton.addEventListener('click', saveStatistic);
 addPlayersButton.addEventListener('click', addPlayer);
 startGameButton.addEventListener('click', startGame);

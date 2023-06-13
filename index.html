@@ -161,33 +161,33 @@
       </div>
     </div>
 
-    <div class="accordion" id="accordionExample">
+    <div class="accordion d-none" id="currentGameStatistic">
       <div class="accordion-item">
         <h2 class="accordion-header" id="headingOne">
           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
             <h4>
-              Статистика
+              Статистика текущей игры
             </h4>
           </button>
         </h2>
-        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#currentGameStatistic">
           <div class="accordion-body">
             <div class="sort_setings">
 
               <div class="btn btn-light form-check ps-4">
-                <input class="form-check-input" type="radio" name="flexRadioDefault" id="bestTotalResult" checked oninput="getPositions()">
+                <input class="form-check-input" type="radio" name="currentStatistic" id="bestTotalResult" checked oninput="getPositions()">
                 <label class="form-check-label" for="bestTotalResult">
                   Лучший результат
                 </label>
               </div>
               <div class="btn btn-light form-check ps-4">
-                <input class="form-check-input" type="radio" name="flexRadioDefault" id="bestAverageResult" oninput="getPositions()">
+                <input class="form-check-input" type="radio" name="currentStatistic" id="bestAverageResult" oninput="getPositions()">
                 <label class="form-check-label" for="bestAverageResult">
                   Лучший средний показатель
                 </label>
               </div>
               <div class="btn btn-light form-check ps-4">
-                <input class="form-check-input" type="radio" name="flexRadioDefault" id="bestRoundResult" oninput="getPositions()">
+                <input class="form-check-input" type="radio" name="currentStatistic" id="bestRoundResult" oninput="getPositions()">
                 <label class="form-check-label" for="bestRoundResult">
                   Лучший раунд
                 </label>
@@ -196,7 +196,7 @@
             </div>
 
             <ol class="leaderboard row">
-              <h3 class="text-center text-muted">404. Статистика не найдена</h3>
+              <h4 class="text-center text-muted mt-4">Начните заполнять результаты что бы увидеть статистику</h4>
             </ol>
 
           </div>
@@ -209,12 +209,56 @@
       
     </div>
 
+
+    <div class="accordion my-5" id="globalStatistic">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingOne">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+            <h4>
+              Статистика
+            </h4>
+          </button>
+        </h2>
+        <div id="collapseTwo" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#globalStatistic">
+          <div class="accordion-body">
+            <div class="total_statistic_sort_setings">
+
+              <div class="btn btn-light form-check ps-4">
+                <input class="form-check-input" type="radio" name="globalStatistic" id="totalBestTotalResult" checked oninput="getStatistic()">
+                <label class="form-check-label" for="totalBestTotalResult">
+                  Лучший результат
+                </label>
+              </div>
+              <div class="btn btn-light form-check ps-4">
+                <input class="form-check-input" type="radio" name="globalStatistic" id="totalBestAverageResult" oninput="getStatistic()">
+                <label class="form-check-label" for="totalBestAverageResult">
+                  Лучший средний показатель
+                </label>
+              </div>
+              <div class="btn btn-light form-check ps-4">
+                <input class="form-check-input" type="radio" name="globalStatistic" id="totalBestRoundResult" oninput="getStatistic()">
+                <label class="form-check-label" for="totalBestRoundResult">
+                  Лучший раунд
+                </label>
+              </div>
+
+            </div>
+
+            <ol class="globalLeaderboard row">
+              <h4 class="text-center text-muted mt-4">404. Статистика не найдена!</h4>
+            </ol>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
-  <script src="/app.js"></script>
+  <!-- <script src="/app.js"></script> -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
-<script>
-  const
+  <script>
+    const
 gameRounds = document.querySelector('.game_rounds'),
 scoresTable = document.querySelector('.scores_table'),
 addPlayersInputsBlock = document.querySelector('.add_players_inputs'),
@@ -345,6 +389,7 @@ function startGame(e) {
     return alert(checkNamesLength());
   }
 
+  document.querySelector('#currentGameStatistic').classList.remove('d-none');
   saveStatisticButton.removeAttribute('disabled');
 
   statistic = [];
@@ -528,20 +573,75 @@ function saveStatistic() {
 }
 
 function getStatistic() {
-  let arr = localStorage.getItem('statistic').split('___') || [];
+  const leaderboard = document.querySelector('.globalLeaderboard');
+  let localStorageStatistic = localStorage.getItem('statistic').split('___') || [];
+  let globalStatistic = []
 
-  arr.forEach(element => {
-    console.log(JSON.parse(element));
+  localStorageStatistic.forEach((element, index) => {
+    globalStatistic = [...globalStatistic, ...JSON.parse(element).statistic || '']
   });
+  console.log(globalStatistic);
 
-  console.log(arr);
+  leaderboard.innerHTML = '';
+
+  let 
+  sortedStatisticTotal = [...globalStatistic].sort((a,b) => a.totalScore - b.totalScore).reverse(),
+  sortedStatisticBestRound = [...globalStatistic].sort((a,b) => a.bestRound - b.bestRound).reverse(),
+  sortedStatisticAverageRound = [...globalStatistic].sort((a,b) => a.averageRound - b.averageRound).reverse();
+
+  if (document.querySelector('#totalBestTotalResult').checked) {
+    sortedStatisticTotal.forEach(player => {
+      showStatistic(player)
+    });
+  }
+  if (document.querySelector('#totalBestAverageResult').checked) {
+    sortedStatisticAverageRound.forEach(player => {
+      showStatistic(player)
+    });
+  }
+  if (document.querySelector('#totalBestRoundResult').checked) {
+    sortedStatisticBestRound.forEach(player => {
+      showStatistic(player)
+    });
+  }
 }
-// getStatistic()
+
+function showStatistic(player) {
+  const leaderboard = document.querySelector('.globalLeaderboard'),
+  playerStatisticArr = [
+    `Баллы: ${player.totalScore}`,
+    `Лучший бросок: ${player.bestRound}`, 
+    `Средний бросок: ${player.averageRound}`,
+    `Худший бросок: ${player.worstRound}`
+  ],
+  li = document.createElement('li'),
+  div = document.createElement('div'),
+  h5 = document.createElement('h5');
+
+  li.className = 'col'
+  div.className = 'card p-2'
+  h5.textContent = `${player.name}`
+
+  leaderboard.appendChild(li);
+  li.appendChild(div);
+  div.appendChild(h5);
+
+  function renderStatistic(childText) {
+    const small = document.createElement('small');
+    small.textContent = childText;
+    div.appendChild(small);
+  }
+
+  playerStatisticArr.forEach(data => {
+    renderStatistic(data);
+  });
+}
+getStatistic()
 saveStatisticButton.addEventListener('click', saveStatistic);
 addPlayersButton.addEventListener('click', addPlayer);
 startGameButton.addEventListener('click', startGame);
 
 
-</script>
+  </script>
 </body>
 </html>
