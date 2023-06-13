@@ -3,6 +3,7 @@ gameRounds = document.querySelector('.game_rounds'),
 scoresTable = document.querySelector('.scores_table'),
 addPlayersInputsBlock = document.querySelector('.add_players_inputs'),
 addPlayersButton = document.querySelector('.add_player_button'),
+saveStatisticButton = document.querySelector('.save_statistic_button'),
 startGameButton = document.querySelector('.start_game');
 
 let tutorial = JSON.parse(localStorage.getItem('tutorial'));
@@ -128,6 +129,8 @@ function startGame(e) {
     return alert(checkNamesLength());
   }
 
+  saveStatisticButton.removeAttribute('disabled');
+
   statistic = [];
   players.forEach(player => {
     statistic.push(
@@ -135,6 +138,8 @@ function startGame(e) {
         name: player.value,
         totalScore: 0,
         bestRound: 0,
+        worstRound: 0,
+        averageRound: 0,
       }
     )
   });
@@ -201,16 +206,31 @@ function setTotalScore() {
   });
 }
 
-function setBestScore() {
+function setStatisticScores() {
   statistic.forEach(player => {
     let playerScores = document.querySelectorAll(`.${player.name}-player input[data-name="score-player"]`);
+    let averageScore = 0;
 
     let scoresList = [];
     playerScores.forEach(score => {
-      scoresList.push(+score.value)
+      if (+score.value > 0) {
+        scoresList.push(+score.value)
+      } else if (+score.value == 0){
+        scoresList.push(0)
+      }
+      
     });
-    const bestRes = scoresList.sort((a, b) => b - a)[0];
 
+    for (let i = 0; i < scoresList.length; i++) {
+      
+      averageScore = Math.round(+averageScore + +scoresList[i] / +scoresList.length);
+    }
+
+    const bestRes = scoresList.sort((a, b) => b - a)[0];
+    const worstRes = scoresList.sort((a, b) => a - b)[0];
+
+    player.worstRound = +worstRes;
+    player.averageRound = averageScore;
     player.bestRound = +bestRes;
   });
 }
@@ -222,23 +242,86 @@ function getPositions(e) {
 
   leaderboard.innerHTML = '';
 
-  let sortedStatistic = [...statistic].sort((a,b) => a.totalScore - b.totalScore).reverse();
+  let 
+  sortedStatisticTotal = [...statistic].sort((a,b) => a.totalScore - b.totalScore).reverse(),
+  sortedStatisticBestRound = [...statistic].sort((a,b) => a.bestRound - b.bestRound).reverse(),
+  sortedStatisticAverageRound = [...statistic].sort((a,b) => a.averageRound - b.averageRound).reverse();
 
-  sortedStatistic.forEach(player => {
-    setBestScore()
-    setTotalScore()
-    renderPositions(player)
-  });
+  if (document.querySelector('#bestTotalResult').checked) {
+    sortedStatisticTotal.forEach(player => {
+      setStatisticScores()
+      setTotalScore()
+      renderPositions(player)
+    });
+  }
+  if (document.querySelector('#bestAverageResult').checked) {
+    sortedStatisticAverageRound.forEach(player => {
+      setStatisticScores()
+      setTotalScore()
+      renderPositions(player)
+    });
+  }
+  if (document.querySelector('#bestRoundResult').checked) {
+    sortedStatisticBestRound.forEach(player => {
+      setStatisticScores()
+      setTotalScore()
+      renderPositions(player)
+    });
+  }
+
 }
 
 function renderPositions(player) {
   const leaderboard = document.querySelector('.leaderboard'),
-  li = document.createElement('li');
+  playerStatisticArr = [
+    `Баллы: ${player.totalScore}`,
+    `Лучший бросок: ${player.bestRound}`, 
+    `Средний бросок: ${player.averageRound}`,
+    `Худший бросок: ${player.worstRound}`
+  ],
+  li = document.createElement('li'),
+  div = document.createElement('div'),
+  h5 = document.createElement('h5');
 
-  li.textContent = `${player.name}: Баллы:${player.totalScore} Лучший бросок:${player.bestRound}`
-  li.className = 'col-12'
+  li.className = 'col'
+  div.className = 'card p-2'
+  h5.textContent = `${player.name}`
+
   leaderboard.appendChild(li);
+  li.appendChild(div);
+  div.appendChild(h5);
+
+  function renderStatistic(childText) {
+    const small = document.createElement('small');
+    small.textContent = childText;
+    div.appendChild(small);
+  }
+
+  playerStatisticArr.forEach(data => {
+    renderStatistic(data);
+  });
+
 }
 
+function saveStatistic() {
+  let pastStatistic = localStorage.getItem('statistic') || '{}';
+  if (true) {
+    localStorage.setItem('statistic', [pastStatistic + '___' + JSON.stringify({statistic})])
+    addToast({message: 'Статистика текущей игры успешно сохранена!',typ: 'success', timeout: 4000})
+  }
+}
+
+function getStatistic() {
+  let arr = localStorage.getItem('statistic').split('___') || [];
+
+  arr.forEach(element => {
+    console.log(JSON.parse(element));
+  });
+
+  console.log(arr);
+}
+// getStatistic()
+saveStatisticButton.addEventListener('click', saveStatistic);
 addPlayersButton.addEventListener('click', addPlayer);
 startGameButton.addEventListener('click', startGame);
+
