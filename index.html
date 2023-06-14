@@ -136,6 +136,14 @@
           
           <div class="modal-body">
 
+            <div class="mb-3">
+              <select class="form-select form-select-lg" id="setTypeGames" aria-label=".form-select-sm getTop">
+                <option value="" disabled>Выберите тип игры</option>
+                <option value="Standard">Стандартный</option>
+                <option value="Multiplier" selected>С множителем</option>
+              </select>
+            </div>
+
             <div class="form-floating mb-3">
               <input type="number" class="form-control game_rounds" id="rounds" min="1" max="150" placeholder="0" autofocus>
               <label for="rounds">Количество раундов</label>
@@ -241,11 +249,26 @@
                   Лучший раунд
                 </label>
               </div>
+              <div class="btn btn-light form-check ps-4">
+                <select class="form-select form-select-sm" id="getTopPlayers" aria-label=".form-select-sm getTop" oninput="getStatistic()">
+                  <option value="1">Топ 1</option>
+                  <option value="3" selected>Топ 3</option>
+                  <option value="5">Топ 5</option>
+                  <option value="10">Топ 10</option>
+                </select>
+              </div>
+              <div class="btn btn-light form-check ps-4">
+                <select class="form-select form-select-sm" id="getTopTypeGames" aria-label=".form-select-sm getTop" oninput="getStatistic()">
+                  <option value="All" selected>Все</option>
+                  <option value="Standard">Стандартный</option>
+                  <option value="Multiplier">С множителем</option>
+                </select>
+              </div>
 
             </div>
 
             <ol class="globalLeaderboard row">
-              <h4 class="text-center text-muted mt-4">404. Статистика не найдена!</h4>
+              <h4 class="text-center text-muted my-5">404. Статистика не найдена!</h4>
             </ol>
 
           </div>
@@ -257,18 +280,20 @@
   <!-- <script src="/app.js"></script> -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
- <script>
-  const
+  <script>
+    const
 gameRounds = document.querySelector('.game_rounds'),
+gameType = document.querySelector('#setTypeGames'),
 scoresTable = document.querySelector('.scores_table'),
 addPlayersInputsBlock = document.querySelector('.add_players_inputs'),
 addPlayersButton = document.querySelector('.add_player_button'),
 saveStatisticButton = document.querySelector('.save_statistic_button'),
 startGameButton = document.querySelector('.start_game');
 
-let tutorial = JSON.parse(localStorage.getItem('tutorial'));
-
-let statistic = [];
+let 
+tutorial = JSON.parse(localStorage.getItem('tutorial')),
+gameStarted = false,
+statistic = [];
 
 let showBeginToast = JSON.parse(localStorage.getItem('tutorial'));
 if (!showBeginToast?.begin) {
@@ -372,8 +397,14 @@ function checkNamesLength() {
 }
 
 function startGame(e) {
+  if (gameStarted) {
+    if (confirm('Сохранить статистику завершенной игры?')) {
+      saveStatistic();
+    }
+  }
   const 
   rounds = +gameRounds.value,
+  type = gameType.value,
   players = addPlayersInputsBlock.querySelectorAll('input'),
   columnWidth = Math.trunc(12 / players.length);
 
@@ -401,11 +432,15 @@ function startGame(e) {
         bestRound: 0,
         worstRound: 0,
         averageRound: 0,
+        playRounds: rounds,
+        gameType: type
       }
     )
   });
 
+  gameStarted = true;
   scoresTable.innerHTML='';
+  document.querySelector('.leaderboard').innerHTML = `<h4 class="text-center text-muted mt-4">Начните заполнять результаты что бы увидеть статистику</h4>`
 
   players.forEach(player => {
     createColumns(columnWidth, player.value)
@@ -565,66 +600,124 @@ function renderPositions(player) {
 }
 
 function saveStatistic() {
-  let pastStatistic = localStorage.getItem('statistic') || '{}';
-  if (true) {
-    localStorage.setItem('statistic', [pastStatistic + '___' + JSON.stringify({statistic})])
-    addToast({message: 'Статистика текущей игры успешно сохранена!',typ: 'success', timeout: 4000})
+  if (gameType.value == 'Multiplier') {
+    let pastStatistic = localStorage.getItem('multiplierStatistic') || '{}';
+    localStorage.setItem('multiplierStatistic', [pastStatistic + '___' + JSON.stringify({statistic})])
+    addToast({message: 'Статистика текущей игры успешно сохранена!',type: 'success', timeout: 4000})
   }
+  if (gameType.value == 'Standard') {
+    let pastStatistic = localStorage.getItem('standardStatistic') || '{}';
+    localStorage.setItem('standardStatistic', [pastStatistic + '___' + JSON.stringify({statistic})])
+    addToast({message: 'Статистика текущей игры успешно сохранена!',type: 'success', timeout: 4000})
+  }
+  getStatistic();
 }
 
 function getStatistic() {
   const leaderboard = document.querySelector('.globalLeaderboard');
-  let localStorageStatistic = localStorage.getItem('statistic')?.split('___') || [];
-  let globalStatistic = []
+  let
+  multiplierStatistic = localStorage.getItem('multiplierStatistic')?.split('___') || [],
+  standardStatistic = localStorage.getItem('standardStatistic')?.split('___') || [],
+  getTopPlayersValue = +document.querySelector('#getTopPlayers').value,
+  getTopTypeGameValue = document.querySelector('#getTopTypeGames').value,
+  globalStatistic = [],
+  sortGlobalStatistic = {
+    totalBestTotalResult: document.querySelector('#totalBestTotalResult').checked,
+    totalBestAverageResult: document.querySelector('#totalBestAverageResult').checked,
+    totalBestRoundResult: document.querySelector('#totalBestRoundResult').checked,
+  };
 
-  localStorageStatistic.forEach((element, index) => {
-    globalStatistic = [...globalStatistic, ...JSON.parse(element).statistic || '']
-  });
-  console.log(globalStatistic);
+  if (getTopTypeGameValue == 'All') {
+    multiplierStatistic.forEach((element, index) => {
+      globalStatistic = [...globalStatistic, ...JSON.parse(element).statistic || '']
+    });
+    standardStatistic.forEach((element, index) => {
+      globalStatistic = [...globalStatistic, ...JSON.parse(element).statistic || '']
+    });
+  }
+  if (getTopTypeGameValue == 'Multiplier') {
+    multiplierStatistic.forEach((element, index) => {
+      globalStatistic = [...globalStatistic, ...JSON.parse(element).statistic || '']
+    });
+  }
+  if (getTopTypeGameValue == 'Standard') {
+    standardStatistic.forEach((element, index) => {
+      globalStatistic = [...globalStatistic, ...JSON.parse(element).statistic || '']
+    });
+  }
 
+  if (localStorage.getItem('multiplierStatistic') || localStorage.getItem('standardStatistic')) {
+    document.querySelector('#globalStatistic').classList.remove('d-none');
+  } else{
+    document.querySelector('#globalStatistic').classList.add('d-none');
+  }
   leaderboard.innerHTML = '';
+  if (!globalStatistic.length) {
+    leaderboard.innerHTML = `<h4 class="text-center text-muted my-5">404. Статистика не найдена!</h4>`;
+  }
 
   let 
   sortedStatisticTotal = [...globalStatistic].sort((a,b) => a.totalScore - b.totalScore).reverse(),
   sortedStatisticBestRound = [...globalStatistic].sort((a,b) => a.bestRound - b.bestRound).reverse(),
   sortedStatisticAverageRound = [...globalStatistic].sort((a,b) => a.averageRound - b.averageRound).reverse();
 
-  if (document.querySelector('#totalBestTotalResult').checked) {
-    sortedStatisticTotal.forEach(player => {
-      showStatistic(player)
+  function getTopStatistic(array, num) {
+    let sliceArray = array.slice(0 * num, num);
+    return sliceArray
+  }
+
+  if (sortGlobalStatistic.totalBestTotalResult) {
+    getTopStatistic(sortedStatisticTotal, getTopPlayersValue).forEach(player => {
+      showStatistic(player, sortGlobalStatistic)
     });
   }
-  if (document.querySelector('#totalBestAverageResult').checked) {
-    sortedStatisticAverageRound.forEach(player => {
-      showStatistic(player)
+  if (sortGlobalStatistic.totalBestAverageResult) {
+    getTopStatistic(sortedStatisticAverageRound, getTopPlayersValue).forEach(player => {
+      showStatistic(player, sortGlobalStatistic)
     });
   }
-  if (document.querySelector('#totalBestRoundResult').checked) {
-    sortedStatisticBestRound.forEach(player => {
-      showStatistic(player)
+  if (sortGlobalStatistic.totalBestRoundResult) {
+    getTopStatistic(sortedStatisticBestRound, getTopPlayersValue).forEach(player => {
+      showStatistic(player, sortGlobalStatistic)
     });
   }
 }
 
-function showStatistic(player) {
+function showStatistic(player, sort) {
   const leaderboard = document.querySelector('.globalLeaderboard'),
   playerStatisticArr = [
     `Баллы: ${player.totalScore}`,
     `Лучший бросок: ${player.bestRound}`, 
     `Средний бросок: ${player.averageRound}`,
-    `Худший бросок: ${player.worstRound}`
+    `Худший бросок: ${player.worstRound}`,
+    `Раундов: ${player.playRounds || 0}`,
+    `Тип игры: ${player.gameType === 'Multiplier'? 'C множителем' : player.gameType === 'Standard'? 'Стандартный' : 'Multiplier'}`
   ],
   li = document.createElement('li'),
   div = document.createElement('div'),
-  h5 = document.createElement('h5');
+  h5 = document.createElement('h5'),
+  h6 = document.createElement('h6');
 
   li.className = 'col'
   div.className = 'card p-2'
   h5.textContent = `${player.name}`
+  h5.className = 'text-center'
+  h6.className = 'text-center'
+
+  if (sort.totalBestTotalResult) {
+    h6.textContent = `${playerStatisticArr[0]}`
+  }
+  if (sort.totalBestAverageResult) {
+    h6.textContent = `${playerStatisticArr[2]}`
+  }
+  if (sort.totalBestRoundResult) {
+    h6.textContent = `${playerStatisticArr[1]}`
+  }
 
   leaderboard.appendChild(li);
   li.appendChild(div);
   div.appendChild(h5);
+  div.appendChild(h6);
 
   function renderStatistic(childText) {
     const small = document.createElement('small');
@@ -636,12 +729,13 @@ function showStatistic(player) {
     renderStatistic(data);
   });
 }
+
 getStatistic()
 saveStatisticButton.addEventListener('click', saveStatistic);
 addPlayersButton.addEventListener('click', addPlayer);
 startGameButton.addEventListener('click', startGame);
 
+  </script>
 
- </script>
 </body>
 </html>
