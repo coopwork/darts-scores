@@ -49,7 +49,8 @@ function createColumns(columnWidth, firstname) {
   div = document.createElement('div'),
   ul = document.createElement('ul');
 
-  div.className = `col-${columnWidth}`;
+  // div.className = `col-${columnWidth}`;
+  div.className = `col`;
   ul.className = `list-group player-scores-column ${firstname}-player`;
   
   scoresTable.appendChild(div)
@@ -327,6 +328,7 @@ function saveStatistic() {
     localStorage.setItem('standardStatistic', [pastStatistic + '___' + JSON.stringify({statistic})])
     addToast({message: 'Статистика текущей игры успешно сохранена!',type: 'success', timeout: 4000})
   }
+  gameStarted = false;
   getStatistic();
 }
 
