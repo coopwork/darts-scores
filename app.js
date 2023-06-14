@@ -138,6 +138,7 @@ function startGame(e) {
     return alert(checkNamesLength());
   }
 
+  document.body.classList.remove('clear_interface');
   document.querySelector('#currentGameStatistic').classList.remove('d-none');
   saveStatisticButton.removeAttribute('disabled');
 
