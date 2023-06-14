@@ -172,9 +172,13 @@ function startGame(e) {
   });
 
   if (document.querySelector('#scoresSum').checked) {
-    document.querySelector('input[data-name="Итог"]').classList.remove('d-none')
+    document.querySelectorAll('input[data-name="Итог"]').forEach(element => {
+      element.classList.remove('d-none');
+    });
   } else {
-    document.querySelector('input[data-name="Итог"]').classList.add('d-none')
+    document.querySelectorAll('input[data-name="Итог"]').forEach(element => {
+      element.classList.add('d-none');
+    });
   }
 
   document.querySelectorAll('.player-scores-column').forEach(column => {
