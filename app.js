@@ -170,6 +170,12 @@ function startGame(e) {
     createRows(playerColumn, 'Итог', 'Итог', 'active');
   });
 
+  if (document.querySelector('#scoresSum').checked) {
+    document.querySelector('input[data-name="Итог"]').classList.remove('d-none')
+  } else {
+    document.querySelector('input[data-name="Итог"]').classList.add('d-none')
+  }
+
   document.querySelectorAll('.player-scores-column').forEach(column => {
     let scoresInputs = column.querySelectorAll('input[data-name="score-player"]');
     let finalScores = column.querySelector('input[data-name="Итог"]');
@@ -365,10 +371,12 @@ function getStatistic() {
     });
   }
 
-  if (localStorage.getItem('multiplierStatistic') || localStorage.getItem('standardStatistic')) {
-    document.querySelector('#globalStatistic').classList.remove('d-none');
-  } else{
+  if (!localStorage.getItem('multiplierStatistic') && !localStorage.getItem('standardStatistic')) {
     document.querySelector('#globalStatistic').classList.add('d-none');
+    document.body.classList.add('clear_interface');
+  } else{
+    document.querySelector('#globalStatistic').classList.remove('d-none');
+    document.body.classList.remove('clear_interface');
   }
   leaderboard.innerHTML = '';
   if (!globalStatistic.length) {

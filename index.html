@@ -53,6 +53,16 @@
     li{
       list-style-position: inside;
     }
+    body.clear_interface .game_menu_buttons{
+      position: relative;
+      height: 100vh;
+    }
+    body.clear_interface .game_menu_buttons button{
+      border-radius: 0;
+    }
+    body.clear_interface .game_menu_buttons button:disabled{
+      display: none;
+    }
     #toasterAlert{
       position: fixed;
       display: flex;
@@ -117,7 +127,7 @@
 <body>
   <div class="container root">
 
-    <div class="d-flex justify-content-center py-3">
+    <div class="game_menu_buttons d-flex justify-content-center align-items-center py-4">
       <div class="btn-group">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#startGameModal">Новая игра</button>
         <button type="button" class="btn btn-success save_statistic_button" disabled>Сохранить статистику</button>
@@ -157,7 +167,16 @@
                 <label for="firstname">Имя</label>
               </div>
             </div>
-            <button class="btn btn-primary add_player_button">Добавить участника</button>
+            <div class="d-flex justify-content-between align-items-center">
+              <button class="btn btn-primary add_player_button">Добавить участника</button>
+              <div class="form-check" title="Отображать сумму баллов в таблице">
+                <input class="form-check-input" type="checkbox" value="" id="scoresSum" checked>
+                <label class="form-check-label" for="scoresSum">
+                  Отображать итог
+                </label>
+              </div>
+            </div>
+            
 
           </div>
           
@@ -218,10 +237,10 @@
     </div>
 
 
-    <div class="accordion my-5" id="globalStatistic">
+    <div class="accordion my-5 d-none" id="globalStatistic">
       <div class="accordion-item">
         <h2 class="accordion-header" id="headingOne">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
             <h4>
               Статистика
             </h4>
@@ -277,12 +296,12 @@
     </div>
 
   </div>
+
   <!-- <script src="/app.js"></script> -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
-
 <script>
-  const
+const
 gameRounds = document.querySelector('.game_rounds'),
 gameType = document.querySelector('#setTypeGames'),
 scoresTable = document.querySelector('.scores_table'),
@@ -453,6 +472,12 @@ function startGame(e) {
     }
     createRows(playerColumn, 'Итог', 'Итог', 'active');
   });
+
+  if (document.querySelector('#scoresSum').checked) {
+    document.querySelector('input[data-name="Итог"]').classList.remove('d-none')
+  } else {
+    document.querySelector('input[data-name="Итог"]').classList.add('d-none')
+  }
 
   document.querySelectorAll('.player-scores-column').forEach(column => {
     let scoresInputs = column.querySelectorAll('input[data-name="score-player"]');
@@ -649,10 +674,12 @@ function getStatistic() {
     });
   }
 
-  if (localStorage.getItem('multiplierStatistic') || localStorage.getItem('standardStatistic')) {
-    document.querySelector('#globalStatistic').classList.remove('d-none');
-  } else{
+  if (!localStorage.getItem('multiplierStatistic') && !localStorage.getItem('standardStatistic')) {
     document.querySelector('#globalStatistic').classList.add('d-none');
+    document.body.classList.add('clear_interface');
+  } else{
+    document.querySelector('#globalStatistic').classList.remove('d-none');
+    document.body.classList.remove('clear_interface');
   }
   leaderboard.innerHTML = '';
   if (!globalStatistic.length) {
