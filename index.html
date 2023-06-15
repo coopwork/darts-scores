@@ -144,7 +144,7 @@
       </h4>
 
       <div class="form-check d-flex justify-content-center gap-1">
-        <input class="form-check-input" type="checkbox" value="" id="muteVoice">
+        <input class="form-check-input" type="checkbox" value="" id="muteVoice" checked>
         <label class="form-check-label" for="muteVoice">
           Выключить звук
         </label>
@@ -253,7 +253,6 @@
       
     </div>
 
-
     <div class="accordion my-5 d-none" id="globalStatistic">
       <div class="accordion-item">
         <h2 class="accordion-header" id="headingOne">
@@ -306,6 +305,30 @@
             <ol class="globalLeaderboard row">
               <h4 class="text-center text-muted my-5">404. Статистика не найдена!</h4>
             </ol>
+
+            <div class="sumTimeInGame d-flex flex-column justify-content-center">
+              <h5 class="text-center">Суммарное время в игре</h5>
+              <div class="d-flex justify-content-center gap-1 text-center">
+                <div class="card p-2">
+                  <small>Часы</small>
+                  <h1>
+                    <time class="hours">10</time>
+                  </h1>
+                </div>
+                <div class="card p-2 ratio-1x1">
+                  <small>Минуты</small>
+                  <h1>
+                    <time class="minutes">00</time>
+                  </h1>
+                </div>
+                <div class="card p-2 ratio-1x1">
+                  <small>Секунды</small>
+                  <h1>
+                    <time class="seconds">00</time>
+                  </h1>
+                </div>
+              </div>
+            </div>
 
           </div>
         </div>

@@ -84,6 +84,20 @@ function createRows(parrent, placeHolder, val, state) {
   parrent.appendChild(input);
 }
 
+function getTimeInGame() {
+  let 
+  time = localStorage.getItem('sumTimeInGame') || 0,
+  seconds = Math.trunc(time%60) < 10? ( '0' + Math.trunc(time%60)) : Math.trunc(time%60);
+  minutes = Math.trunc(time/60%60) < 10? ( '0' + Math.trunc(time/60%60)) : Math.trunc(time/60%60);
+  hour = Math.trunc(time/60/60%60) < 10? ( '0' + Math.trunc(time/60/60%60)) : Math.trunc(time/60/60%60),
+  sumTimeInGameBlock = document.querySelector('.sumTimeInGame');
+
+  sumTimeInGameBlock.querySelector('.hours').textContent = hour;
+  sumTimeInGameBlock.querySelector('.minutes').textContent = minutes;
+  sumTimeInGameBlock.querySelector('.seconds').textContent = seconds;
+
+}
+
 function createTimer() {
   let time = 0;
   document.querySelector('.game_timer').classList.remove('d-none');
@@ -96,8 +110,12 @@ function createTimer() {
     hour = time/60/60%60;
 
     let strTimer = `${hour < 10? ( '0' + Math.trunc(hour)) : Math.trunc(hour)}:${minutes < 10? ('0' + Math.trunc(minutes)) : Math.trunc(minutes)}:${seconds < 10? ('0' + seconds) : seconds}`;
+    
     timerElement.textContent = strTimer;
     ++time;
+    localStorage.setItem('sumTimeInGame', time);
+    getTimeInGame()
+
 
     scoresInputs.forEach(input => {
       startGameButton.addEventListener('click', ()=>{
@@ -520,6 +538,7 @@ function showStatistic(player, sort) {
   });
 }
 
+getTimeInGame()
 getStatistic()
 saveStatisticButton.addEventListener('click', saveStatistic);
 addPlayersButton.addEventListener('click', addPlayer);
