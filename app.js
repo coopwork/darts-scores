@@ -415,8 +415,10 @@ function saveStatistic() {
     localStorage.setItem('standardStatistic', [pastStatistic + '___' + JSON.stringify({statistic})])
     addToast({message: 'Статистика текущей игры успешно сохранена!',type: 'success', timeout: 4000})
   }
+  saveStatisticButton.setAttribute('disabled', 'true');
   gameStarted = false;
   getStatistic();
+
 }
 
 function getStatistic() {
