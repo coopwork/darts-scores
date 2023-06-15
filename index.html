@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
   <link rel="shortcut icon" href="https://image.spreadshirtmedia.net/image-server/v1/products/T1459A839PA4459PT28D178063897W10000H10000/views/1,width=550,height=550,appearanceId=839,backgroundColor=F2F2F2/darts-player-darts-darts-emblem-logo-bullseye-sticker.jpg" type="image/x-icon">
+  <link rel="stylesheet" href="./index.css">
   <script defer>
     let toaster = null;
     function removeToast(e) {
@@ -49,82 +50,6 @@
         }
     }
   </script>
-  <style>
-    li{
-      list-style-position: inside;
-    }
-    body.clear_interface{
-      overflow: hidden;
-    }
-    body.clear_interface .game_menu_buttons{
-      position: relative;
-      height: 100vh;
-    }
-    body.clear_interface .game_menu_buttons button{
-      border-radius: 0;
-    }
-    body.clear_interface .game_menu_buttons button:disabled{
-      display: none;
-    }
-    #toasterAlert{
-      position: fixed;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      bottom: 10px;
-      right: 10px;
-      z-index: 10000;
-      max-width: 450px;
-      width: 100%;
-    }
-    .toastAlert i.bi.bi-plus-circle-fill{
-      transform: rotate(45deg);
-      font-size: 30px;
-      text-shadow: 1px 2px 10px rgba(0, 0, 0, 0.200);
-      color: red;
-      border-radius: 50%;
-      position: absolute;
-      z-index: 1;
-      top: -10px; right: -5px;
-      cursor: pointer;
-      opacity: .85;
-    }
-    .toastAlert i.bi.bi-plus-circle-fill:hover{
-      scale: 1.1;
-      opacity: 1;
-    }
-    .toastAlert{
-      position: relative;
-      padding: 15px;
-      border-radius: 10px;
-      background-color: wheat;
-      animation: toastStart .5s ease-in-out;
-      width: 100%;
-      opacity: .9;
-      box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.200);
-      backdrop-filter: blur(10px);
-    }
-    @keyframes toastStart {
-      from{
-        height: 1px;
-        transform: translateX(800px);
-      }
-    }
-    .toastAlert.fade-out{
-      opacity: 0 !important;
-      transition: 1s ease-in-out all;
-    }
-
-    .toastAlert.danger{background-color: red; color: white;}
-    .toastAlert.danger i.bi.bi-plus-circle-fill{color: yellow}
-    .toastAlert.warning{background-color: yellow;}
-    .toastAlert.succes{background-color: #8fd879;}
-    .toastAlert.succes i.bi.bi-plus-circle-fill{color: white;}
-    .toastAlert.main{background-color: blue; color: white;}
-    .toastAlert.light{background-color: gainsboro;}
-    .toastAlert.gray{background-color: gray;}
-    .toastAlert.black{background-color: black; color: white;}
-  </style>
   <title>Darts</title>
 </head>
 <body>
@@ -163,11 +88,21 @@
           
           <div class="modal-body">
 
+            <h5 class="text-center">Настройки игры</h5>
             <div class="mb-3">
               <select class="form-select form-select-lg" id="setTypeGames" aria-label=".form-select-sm getTop">
                 <option value="" disabled>Выберите тип игры</option>
                 <option value="Standard">Стандартный</option>
                 <option value="Multiplier" selected>С множителем</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <select class="form-select form-select-lg" id="setGameSecure" aria-label=".form-select-sm getTop">
+                <option disabled>Секретность результатов игры</option>
+                <option value="notSecret" selected>Показывать всё</option>
+                <option value="finalSecret">Не показывать итог</option>
+                <option value="allSecret">Не показывать всё</option>
               </select>
             </div>
 
@@ -186,12 +121,12 @@
             </div>
             <div class="d-flex justify-content-between align-items-center">
               <button class="btn btn-primary add_player_button">Добавить участника</button>
-              <div class="form-check" title="Отображать сумму баллов в таблице">
+              <!-- <div class="form-check" title="Отображать сумму баллов в таблице">
                 <input class="form-check-input" type="checkbox" value="" id="scoresSum" checked>
                 <label class="form-check-label" for="scoresSum">
                   Отображать итог
                 </label>
-              </div>
+              </div> -->
             </div>
             
 

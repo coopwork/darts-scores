@@ -41,6 +41,11 @@ function addPlayer(e) {
   div.appendChild(label);
   addPlayersInputsBlock.appendChild(div);
   input.focus()
+  input.addEventListener('keyup',(e)=>{
+    if (e.key == 'Enter') {
+      addPlayer();
+    }
+  })
 
   let showRemovePlayerToast = JSON.parse(localStorage.getItem('tutorial'));
   if (!showRemovePlayerToast?.removePlayer) {
@@ -232,15 +237,31 @@ function startGame(e) {
     createRows(playerColumn, 'Итог', 'Итог', 'active');
   });
 
-  if (document.querySelector('#scoresSum').checked) {
+  // if (document.querySelector('#scoresSum').checked) {
+  //   document.querySelectorAll('input[data-name="Итог"]').forEach(element => {
+  //     element.classList.remove('d-none');
+  //   });
+  // } else {
+  //   document.querySelectorAll('input[data-name="Итог"]').forEach(element => {
+  //     element.classList.add('d-none');
+  //   });
+  // }
+  if (document.querySelector('#setGameSecure').value == "notSecret") {
     document.querySelectorAll('input[data-name="Итог"]').forEach(element => {
       element.classList.remove('d-none');
+      scoresTable.classList.remove('secret');
     });
-  } else {
+  } 
+  if (document.querySelector('#setGameSecure').value == "finalSecret") {
     document.querySelectorAll('input[data-name="Итог"]').forEach(element => {
       element.classList.add('d-none');
+      scoresTable.classList.remove('secret');
     });
   }
+  if (document.querySelector('#setGameSecure').value == "allSecret") {
+    scoresTable.classList.add('secret');
+  }
+
 
   document.querySelectorAll('.player-scores-column').forEach(column => {
     let scoresInputs = column.querySelectorAll('input[data-name="score-player"]');
@@ -248,6 +269,7 @@ function startGame(e) {
 
     scoresInputs.forEach(input => {
       input.addEventListener('keyup', (e)=>{
+        let emptyElements = [];
         if (e.key == 'Enter') {
           let scoresSum = 0;
           e.target.value = +eval(e.target.value);
@@ -256,6 +278,24 @@ function startGame(e) {
           });
           finalScores.value = scoresSum;
           finalScores.setAttribute('value', scoresSum);
+
+          if (e.target.closest('.col').nextElementSibling) {
+            let nextElements = e.target.closest('.col').nextElementSibling.querySelector('.player-scores-column').querySelectorAll('input.list-group-item[data-name="score-player"]');
+            nextElements.forEach(emptyInput => {
+              if (!emptyInput.value) {
+                emptyElements.push(emptyInput)
+                emptyElements[0].focus()
+              }
+            });
+          } else {
+            let firstElements = scoresTable.querySelector('.col').querySelector('.player-scores-column').querySelectorAll('input.list-group-item[data-name="score-player"]');
+            firstElements.forEach(emptyInput => {
+              if (!emptyInput.value) {
+                emptyElements.push(emptyInput)
+                emptyElements[0].focus()
+              }
+            });
+          }
 
           setTotalScore()
           getPositions(e)
@@ -545,4 +585,5 @@ getStatistic()
 saveStatisticButton.addEventListener('click', saveStatistic);
 addPlayersButton.addEventListener('click', addPlayer);
 startGameButton.addEventListener('click', startGame);
+addPlayersInputsBlock.querySelector('input').addEventListener('keyup', e=> e.key == 'Enter'? addPlayer() : null);
 
