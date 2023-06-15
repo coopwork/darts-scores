@@ -113,7 +113,7 @@ function createTimer() {
     
     timerElement.textContent = strTimer;
     ++time;
-    localStorage.setItem('sumTimeInGame', time);
+    localStorage.setItem('sumTimeInGame', +localStorage.getItem('sumTimeInGame') + 0.5);
     getTimeInGame()
 
 
