@@ -19,6 +19,10 @@ if (!showBeginToast?.begin) {
   addToast({message: 'Начните игру нажав на кнопку "Новая игра"', timeout: 6000})
 }
 
+function getVoice(text) {
+  window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+}
+
 function addPlayer(e) {
   const 
   div = document.createElement('div'),
@@ -86,6 +90,7 @@ function createTimer() {
   const gameTimer = setInterval(() => {
     let scoresInputs = document.querySelectorAll('input[data-name="score-player"]');
     let
+    counter = 0,
     seconds = time%60,
     minutes = time/60%60,
     hour = time/60/60%60;
@@ -95,14 +100,18 @@ function createTimer() {
     ++time;
 
     scoresInputs.forEach(input => {
+      startGameButton.addEventListener('click', ()=>{
+        clearInterval(gameTimer)
+      })
       input.addEventListener('input', ()=>{
-        let counter = 0;
+        counter = 0;
         for (let i = 0; i < scoresInputs.length; i++) {
           if (scoresInputs[i].value) {
             counter = counter + 1
-          }
-          if (counter == scoresInputs.length) {
-            clearInterval(gameTimer)
+            if (counter == scoresInputs.length){
+              clearInterval(gameTimer)
+              saveStatisticButton.removeAttribute('disabled');
+            }
           }
         }
       })
@@ -173,7 +182,6 @@ function startGame(e) {
 
   document.body.classList.remove('clear_interface');
   document.querySelector('#currentGameStatistic').classList.remove('d-none');
-  saveStatisticButton.removeAttribute('disabled');
 
   statistic = [];
   players.forEach(player => {
@@ -254,6 +262,19 @@ function startGame(e) {
           addToast({message: 'Вы можете ввести в поле баллов математическую функцию и получить результат по нажатию на клавишу "ENTER" например: 20+15+10, ENTER = 45', timeout: 10000})
         }
       });
+
+      input.addEventListener('focus', (e)=>{
+        if (!document.querySelector('#muteVoice').checked) {
+          if (e.target.closest('.col').nextElementSibling) {
+            getVoice(`Выходит ${e.target.closest('.col').querySelector('.player-scores-column').querySelector('.list-group-item.active').value}`);
+            getVoice(`Готовится ${e.target.closest('.col').nextElementSibling.querySelector('.player-scores-column').querySelector('.list-group-item.active').value}`);
+          } else {
+            getVoice(`Выходит ${e.target.closest('.col').querySelector('.player-scores-column').querySelector('.list-group-item.active').value}`);
+            getVoice(`Готовится ${scoresTable.querySelector('.col').querySelector('.player-scores-column').querySelector('.list-group-item.active').value}`);
+          }
+        }
+      });
+
     });
   });
 
@@ -503,3 +524,4 @@ getStatistic()
 saveStatisticButton.addEventListener('click', saveStatistic);
 addPlayersButton.addEventListener('click', addPlayer);
 startGameButton.addEventListener('click', startGame);
+
