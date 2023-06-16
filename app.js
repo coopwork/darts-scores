@@ -134,6 +134,7 @@ function createTimer() {
             if (counter == scoresInputs.length){
               clearInterval(gameTimer)
               saveStatisticButton.removeAttribute('disabled');
+              scoresTable.classList.remove('secret');
             }
           }
         }
